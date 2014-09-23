@@ -11,10 +11,11 @@
   a:visited{color:#FFFFFF;border-style:none;text-decoration:underline}
   a:hover{color:#FFFFFF;border-color:none;text-decoration:underline}
   address{vertical-align:top;text-align:right;font-style:normal}
-  td{border-color:#FFFFFF;text-align:center}
-  th{border-color:#FFFFFF;text-align:center}
+  td{border-color:#FFFFFF;text-align:left;vertical-align:top}
+  th{border-color:#FFFFFF;text-align:left}
   input{border-style:solid;border-color:#FFFFFF;background-color:#000000;color:#FFFFFF}
   .tdbutton{border-width:1px;border-style:solid;border-color:white;height:30px;width:30px}
+  .whiteborder{border-color:#FFFFFF;border-style:solid;border-width:1px}
   hr{border-style:solid}
   * {-webkit-user-select: none;image-rendering: -webkit-optimize-contrast;}
 --></style>
@@ -24,7 +25,8 @@
 <div style="vertical-align:center"><img src="logo.png"></div>
 <!-- canvas align="center" id="canvas0" width="288" height="288" style="width:288px;height:288px;background-color:black;border-style:solid;border-width:0px;border-color:#FFFFFF"--><!-- /canvas -->
 <p><form name=form1>
-COMMAND:<input name=command type=text><input type=button value=SEND onclick="javscript:form1.command.value=recvcmd(form1.command.value);">
+COMMAND:<input name=command type=text onkeydown="if(window.event.keyCode==13)form1.command.value=recvcmd(form1.command.value);">
+<input type=button value=SEND onclick="javscript:form1.command.value=recvcmd(form1.command.value);">
 </form></p>
 <div id=display>
 </div>
