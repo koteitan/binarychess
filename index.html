@@ -30,11 +30,21 @@ COMMAND:<input name=command type=text onkeydown="if(window.event.keyCode==13)for
 </form></p>
 <div id=display>
 </div>
+<p>コマンド入力の仕方:<br>
+・"XXXXXX YYYYYY" で XXXXXX の駒を YYYYYY に動かす。<br>
+・"XXXXXX" で XXXXXX が distance=0 になる視点移動。<br>
+駒の動き:<br>
+・rook は１次元移動。(1bit反転した位置に動かせる)<br>
+・bishop は２次元斜め移動。(2bit反転した位置に動かせる)<br>
+・king は１～３次元斜め移動。(1～3bit反転した位置に動かせる)<br>
+その他実装状態:<br>
+・AIはまだないです。白黒両方人間プレイヤー。<br>
+・まだkingとっても終わりになりません。<br>
+・３ビット立つ位置が先手初手に激戦区になりすぎで、たぶんこれぜんぜんだめですｗ<br>
+</p>
 <address id="debug">
 binary chess version <span id="versiondisplay"></span> <script type="text/javascript" src="./version.js"></script><br>
-programmed by <a href="http://twitter.com/#!/koteitan">koteitan</a> / 
-source code is at <a href="https://github.com/koteitan/binarychess">github</a><br>
-<a href="./about.html">about and how to play the game</a><br>
+programmed by <a href="http://twitter.com/#!/koteitan">koteitan</a>
 </address>
 </body>
 </html>
