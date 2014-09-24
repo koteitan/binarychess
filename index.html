@@ -26,7 +26,7 @@
 <div style="vertical-align:center"><img src="logo.png"></div>
 <!-- canvas align="center" id="canvas0" width="288" height="288" style="width:288px;height:288px;background-color:black;border-style:solid;border-width:0px;border-color:#FFFFFF"--><!-- /canvas -->
 <p><form name=form1>
-COMMAND:<input name=command type=text onkeydown="if(window.event.keyCode==13)form1.command.value=recvcmd(form1.command.value);">
+COMMAND:<input name=command type=text onkeydown="if(window.event.keyCode==13){form1.command.value=recvcmd(form1.command.value);return false;}">
 <input type=button value=SEND onclick="javscript:form1.command.value=recvcmd(form1.command.value);">
 </form></p>
 <div id=display>
@@ -34,6 +34,7 @@ COMMAND:<input name=command type=text onkeydown="if(window.event.keyCode==13)for
 <p>コマンド入力の仕方:<br>
 ・"XXXXXXX YYYYYYY" で XXXXXXX の駒を YYYYYYY に動かす。<br>
 ・"XXXXXXX" で XXXXXXX が distance=0 になる視点移動。<br>
+・SEND ボタンの代わりに Enter キーでも動くよ。<br>
 駒の動き:<br>
 ・
 ・ROOK は１次元移動。(1bit反転した位置に動かせる)<br>
@@ -45,7 +46,9 @@ COMMAND:<input name=command type=text onkeydown="if(window.event.keyCode==13)for
 </p>
 <address id="debug">
 binary chess version <span id="versiondisplay"></span> <script type="text/javascript" src="./version.js"></script><br>
-programmed by <a href="http://twitter.com/#!/koteitan">koteitan</a>
+programmed by <a href="http://twitter.com/#!/koteitan">koteitan</a><br>
+source code is at <a href="https://github.com/koteitan/binarychess/">github</a><br>
+under discussion in <a href="http://peace.2ch.net/test/read.cgi/gamedev/1383053532/">4D game developer forum<br>
 </address>
 </body>
 </html>
