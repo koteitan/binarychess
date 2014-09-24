@@ -31,15 +31,19 @@ COMMAND:<input name=command type=text onkeydown="if(window.event.keyCode==13){fo
 </form></p>
 <div id=display>
 </div>
-<p>コマンド入力の仕方:<br>
-・"XXXXXXX YYYYYYY" で XXXXXXX の駒を YYYYYYY に動かす。<br>
-・"XXXXXXX" で XXXXXXX が distance=0 になる視点移動。<br>
-・SEND ボタンの代わりに Enter キーでも動くよ。<br>
+<p>
+表示のよみかた:<br>
+・"KING", "BISHOP", "ROOK" というのが駒の種類です。<br>
+・駒の種類の色がプレイヤーの色になっています。たとえば、<span class="p0">KING</span>は白(先手)のキング。<span class="p1">KING</span>は黒(後手)のキング。<br>
+・横の数字はその駒の位置を表しています。<span class="p0">KING</span> "0000000" は座標 (0,0,0,0,0,0,0) に白のキングがいるということ。<br>
 駒の動き:<br>
-・
 ・ROOK は１次元移動。(1bit反転した位置に動かせる)<br>
 ・BISHOP は２次元斜め移動。(2bit反転した位置に動かせる)<br>
 ・KING は１～３次元斜め移動。(1～3bit反転した位置に動かせる)<br>
+コマンド入力の仕方:<br>
+・"XXXXXXX YYYYYYY" で XXXXXXX の駒を YYYYYYY に動かす。<br>
+・"XXXXXXX" で XXXXXXX が distance=0 になる視点移動。<br>
+・SEND ボタンの代わりに Enter キーでも動くよ。<br>
 その他実装状態:<br>
 ・AIはまだないです。白黒両方人間プレイヤー。<br>
 ・まだ KING とっても終わりになりません。<br>
