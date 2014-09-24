@@ -5,7 +5,7 @@
 <script type="text/javascript" src="./binarychess.js"></script>
 <script type="text/javascript" src="./exarray.js"></script>
 <style><!--
-  body{font-family:Arial;font-size:10pt;color:#FFFFFF; background-color:black}
+  body{font-family:courier;font-size:10pt;color:#FFFFFF; background-color:black}
   a{color:#FFFFFF;border-style:none;text-decoration:underline}
   a:link{color:#FFFFFF;border-style:none;text-decoration:underline}
   a:visited{color:#FFFFFF;border-style:none;text-decoration:underline}
@@ -16,12 +16,13 @@
   input{border-style:solid;border-color:#FFFFFF;background-color:#000000;color:#FFFFFF}
   .tdbutton{border-width:1px;border-style:solid;border-color:white;height:30px;width:30px}
   .whiteborder{border-color:#FFFFFF;border-style:solid;border-width:1px}
+  .p0{background-color:#FFFFFF;border-color:#000000;color:#000000;border-style:solid;border-width:1px;padding:1px}
+  .p1{background-color:#000000;border-color:#FFFFFF;color:#FFFFFF;border-style:solid;border-width:1px;padding:1px}
   hr{border-style:solid}
-  * {-webkit-user-select: none;image-rendering: -webkit-optimize-contrast;}
 --></style>
-<title>binary chess</title></head>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<body ontouchmove="event.preventDefault()">
+<title>7 dimensional binary chess</title></head>
+<!--meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"-->
+<!-- body ontouchmove="event.preventDefault()"-->
 <div style="vertical-align:center"><img src="logo.png"></div>
 <!-- canvas align="center" id="canvas0" width="288" height="288" style="width:288px;height:288px;background-color:black;border-style:solid;border-width:0px;border-color:#FFFFFF"--><!-- /canvas -->
 <p><form name=form1>
@@ -31,16 +32,16 @@ COMMAND:<input name=command type=text onkeydown="if(window.event.keyCode==13)for
 <div id=display>
 </div>
 <p>コマンド入力の仕方:<br>
-・"XXXXXX YYYYYY" で XXXXXX の駒を YYYYYY に動かす。<br>
-・"XXXXXX" で XXXXXX が distance=0 になる視点移動。<br>
+・"XXXXXXX YYYYYYY" で XXXXXXX の駒を YYYYYYY に動かす。<br>
+・"XXXXXXX" で XXXXXXX が distance=0 になる視点移動。<br>
 駒の動き:<br>
-・rook は１次元移動。(1bit反転した位置に動かせる)<br>
-・bishop は２次元斜め移動。(2bit反転した位置に動かせる)<br>
-・king は１～３次元斜め移動。(1～3bit反転した位置に動かせる)<br>
+・
+・ROOK は１次元移動。(1bit反転した位置に動かせる)<br>
+・BISHOP は２次元斜め移動。(2bit反転した位置に動かせる)<br>
+・KING は１～３次元斜め移動。(1～3bit反転した位置に動かせる)<br>
 その他実装状態:<br>
 ・AIはまだないです。白黒両方人間プレイヤー。<br>
-・まだkingとっても終わりになりません。<br>
-・３ビット立つ位置が先手初手に激戦区になりすぎで、たぶんこれぜんぜんだめですｗ<br>
+・まだ KING とっても終わりになりません。<br>
 </p>
 <address id="debug">
 binary chess version <span id="versiondisplay"></span> <script type="text/javascript" src="./version.js"></script><br>
