@@ -20,7 +20,9 @@
   .p0{background-color:#FFFFFF;border-color:#000000;color:#000000;border-style:solid;border-width:1px;padding:1px}
   .p1{background-color:#000000;border-color:#FFFFFF;color:#FFFFFF;border-style:solid;border-width:1px;padding:1px}
   hr{border-style:solid}
-  .label{white-space:pre}
+  .i18n{display:none}
+  .pieceimg{width:17px;height:17px;vertical-align:middle}
+  #howto .pieceimg{width:16px;height:16px;vertical-align:text-bottom}
   .b0{background-color:#FFFFFF;color:#000000;border:1px solid #FFFFFF}
   .b1{background-color:#000000;color:#FFFFFF;border:1px solid #FFFFFF}
   td.piece{white-space:nowrap;padding:2px;border:2px solid transparent}
@@ -46,21 +48,41 @@ MODE:
 </form></p>
 <div id=display>
 </div>
-<p>
+<!-- description and how to play: one block per language (ja, en, zh, ko, es). see selectLanguage() -->
+<div id=description>
+<p class=i18n lang=ja>
 ７次元バイナリチェス<br>
-これは 2x2x2x2x2x2x2x2 のボード上での 7 次元のチェスです。<br>
+これは 2x2x2x2x2x2x2 のボード上での 7 次元のチェスです。<br>
 </p>
+<p class=i18n lang=en>
+7 Dimensional Binary Chess<br>
+This is a 7 dimensional chess on a 2x2x2x2x2x2x2 board.<br>
+</p>
+<p class=i18n lang=zh>
+七维二进制国际象棋<br>
+这是在 2x2x2x2x2x2x2 棋盘上进行的七维国际象棋。<br>
+</p>
+<p class=i18n lang=ko>
+7차원 바이너리 체스<br>
+2x2x2x2x2x2x2 보드에서 하는 7차원 체스입니다.<br>
+</p>
+<p class=i18n lang=es>
+Ajedrez binario de 7 dimensiones<br>
+Es un ajedrez de 7 dimensiones en un tablero de 2x2x2x2x2x2x2.<br>
+</p>
+</div>
 
-<p>
+<div id=howto>
+<p class=i18n lang=ja>
 表示のよみかた:<br>
-・"KING", "BISHOP", "ROOK" というのが駒の種類です。<br>
-・駒の種類の色がプレイヤーの色になっています。たとえば、<span class="p0">KING</span>は白(先手)のキング。<span class="p1">KING</span>は黒(後手)のキング。<br>
-・横の数字はその駒の位置を表しています。<span class="p0">KING</span> "0000000" は座標 (0,0,0,0,0,0,0) に白のキングがいるということ。0 は白いマス、1 は黒いマスで書きます。<br>
+・<img class=pieceimg src="img/white_king.png" alt="KING"> が KING、<img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> が BISHOP、<img class=pieceimg src="img/white_rook.png" alt="ROOK"> が ROOK で、駒の種類を表します。<br>
+・駒の塗りの色がプレイヤーの色になっています。たとえば、<img class=pieceimg src="img/white_king.png" alt="KING">は白(先手)のキング。<img class=pieceimg src="img/black_king.png" alt="KING">は黒(後手)のキング。<br>
+・横の数字はその駒の位置を表しています。<img class=pieceimg src="img/white_king.png" alt="KING"> "0000000" は座標 (0,0,0,0,0,0,0) に白のキングがいるということ。0 は白いマス、1 は黒いマスで書きます。<br>
 ・distance は視点の位置から何ビット違うかです。同じ distance の駒が同じ列に並びます。<br>
 駒の動き:<br>
-・ROOK は１次元移動。(1bit反転した位置に動かせる)<br>
-・BISHOP は２次元斜め移動。(2bit反転した位置に動かせる)<br>
-・KING は１～３次元斜め移動。(1～3bit反転した位置に動かせる)<br>
+・<img class=pieceimg src="img/white_rook.png" alt="ROOK"> ROOK は１次元移動。(1bit反転した位置に動かせる)<br>
+・<img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> BISHOP は２次元斜め移動。(2bit反転した位置に動かせる)<br>
+・<img class=pieceimg src="img/white_king.png" alt="KING"> KING は１～３次元斜め移動。(1～3bit反転した位置に動かせる)<br>
 マウスでの操作:<br>
 ・自分の駒をクリックすると選びます。選んだ駒は黄色、その駒で取れる相手の駒は赤で光ります。移動先の候補は薄く書かれます。<br>
 ・赤い駒か薄い移動先をクリックすると、そこへ動きます。選んだ駒をもう一度クリックすると選ぶのをやめます。<br>
@@ -69,6 +91,93 @@ MODE:
 勝ち負け:<br>
 ・相手の KING をとったら勝ちです。<br>
 </p>
+<p class=i18n lang=en>
+How to read the board:<br>
+・<img class=pieceimg src="img/white_king.png" alt="KING"> is KING, <img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> is BISHOP and <img class=pieceimg src="img/white_rook.png" alt="ROOK"> is ROOK. They show the kinds of pieces.<br>
+・The fill color of the piece is the color of its player. For example, <img class=pieceimg src="img/white_king.png" alt="KING"> is the white (first player) king, and <img class=pieceimg src="img/black_king.png" alt="KING"> is the black (second player) king.<br>
+・The digits next to a piece show its location. <img class=pieceimg src="img/white_king.png" alt="KING"> "0000000" means that the white king is at (0,0,0,0,0,0,0). 0 is drawn as a white cell and 1 as a black cell.<br>
+・distance is the number of bits that differ from the viewpoint. Pieces with the same distance are listed in the same column.<br>
+Moves of pieces:<br>
+・<img class=pieceimg src="img/white_rook.png" alt="ROOK"> ROOK moves in 1 dimension. (It can move to the location with 1 bit flipped.)<br>
+・<img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> BISHOP moves diagonally in 2 dimensions. (It can move to the location with 2 bits flipped.)<br>
+・<img class=pieceimg src="img/white_king.png" alt="KING"> KING moves diagonally in 1 to 3 dimensions. (It can move to the location with 1 to 3 bits flipped.)<br>
+Mouse operation:<br>
+・Click your piece to select it. The selected piece is highlighted in yellow, and the opponent pieces it can capture are highlighted in red. The destination candidates are drawn faintly.<br>
+・Click a red piece or a faint candidate to move there. Click the selected piece again to cancel the selection.<br>
+・Double click a white piece to move the viewpoint so that its location becomes distance = 0.<br>
+・Double click a black piece to move the viewpoint so that its location becomes distance = 7.<br>
+Win:<br>
+・You win when you capture the opponent's KING.<br>
+</p>
+<p class=i18n lang=zh>
+棋盘的读法:<br>
+・<img class=pieceimg src="img/white_king.png" alt="KING"> 是 KING，<img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> 是 BISHOP，<img class=pieceimg src="img/white_rook.png" alt="ROOK"> 是 ROOK，表示棋子的种类。<br>
+・棋子的填充颜色就是玩家的颜色。例如，<img class=pieceimg src="img/white_king.png" alt="KING"> 是白方(先手)的王，<img class=pieceimg src="img/black_king.png" alt="KING"> 是黑方(后手)的王。<br>
+・旁边的数字表示棋子的位置。<img class=pieceimg src="img/white_king.png" alt="KING"> "0000000" 表示白方的王在坐标 (0,0,0,0,0,0,0)。0 画成白格，1 画成黑格。<br>
+・distance 是与视点位置不同的位数。distance 相同的棋子排在同一列。<br>
+棋子的走法:<br>
+・<img class=pieceimg src="img/white_rook.png" alt="ROOK"> ROOK 沿 1 个维度移动。(可以移动到翻转 1 位的位置)<br>
+・<img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> BISHOP 沿 2 个维度斜向移动。(可以移动到翻转 2 位的位置)<br>
+・<img class=pieceimg src="img/white_king.png" alt="KING"> KING 沿 1～3 个维度斜向移动。(可以移动到翻转 1～3 位的位置)<br>
+鼠标操作:<br>
+・点击自己的棋子即可选中。选中的棋子显示为黄色，它能吃掉的对方棋子显示为红色。可移动的位置会淡淡地显示出来。<br>
+・点击红色的棋子或淡色的位置，即可移动到那里。再次点击选中的棋子可取消选择。<br>
+・双击白方棋子，视点会移动，使它的位置成为 distance = 0。<br>
+・双击黑方棋子，视点会移动，使它的位置成为 distance = 7。<br>
+胜负:<br>
+・吃掉对方的 KING 即获胜。<br>
+</p>
+<p class=i18n lang=ko>
+보드 읽는 법:<br>
+・<img class=pieceimg src="img/white_king.png" alt="KING">은 KING, <img class=pieceimg src="img/white_bishop.png" alt="BISHOP">은 BISHOP, <img class=pieceimg src="img/white_rook.png" alt="ROOK">은 ROOK으로, 말의 종류를 나타냅니다.<br>
+・말을 칠한 색이 플레이어의 색입니다. 예를 들어 <img class=pieceimg src="img/white_king.png" alt="KING">은 백(선수)의 킹, <img class=pieceimg src="img/black_king.png" alt="KING">은 흑(후수)의 킹입니다.<br>
+・옆의 숫자는 그 말의 위치입니다. <img class=pieceimg src="img/white_king.png" alt="KING"> "0000000"은 좌표 (0,0,0,0,0,0,0)에 백의 킹이 있다는 뜻입니다. 0은 흰 칸, 1은 검은 칸으로 표시합니다.<br>
+・distance는 시점 위치와 다른 비트의 개수입니다. distance가 같은 말은 같은 열에 놓입니다.<br>
+말의 움직임:<br>
+・<img class=pieceimg src="img/white_rook.png" alt="ROOK"> ROOK은 1차원으로 이동합니다. (1비트를 뒤집은 위치로 이동할 수 있습니다)<br>
+・<img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> BISHOP은 2차원 대각선으로 이동합니다. (2비트를 뒤집은 위치로 이동할 수 있습니다)<br>
+・<img class=pieceimg src="img/white_king.png" alt="KING"> KING은 1~3차원 대각선으로 이동합니다. (1~3비트를 뒤집은 위치로 이동할 수 있습니다)<br>
+마우스 조작:<br>
+・자기 말을 클릭하면 선택됩니다. 선택한 말은 노란색, 그 말로 잡을 수 있는 상대 말은 빨간색으로 표시됩니다. 이동할 수 있는 칸은 흐리게 표시됩니다.<br>
+・빨간 말이나 흐린 칸을 클릭하면 그곳으로 이동합니다. 선택한 말을 다시 클릭하면 선택이 취소됩니다.<br>
+・백의 말을 더블클릭하면 그 위치가 distance = 0이 되도록 시점이 이동합니다.<br>
+・흑의 말을 더블클릭하면 그 위치가 distance = 7이 되도록 시점이 이동합니다.<br>
+승패:<br>
+・상대의 KING을 잡으면 이깁니다.<br>
+</p>
+<p class=i18n lang=es>
+Cómo leer el tablero:<br>
+・<img class=pieceimg src="img/white_king.png" alt="KING"> es KING (rey), <img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> es BISHOP (alfil) y <img class=pieceimg src="img/white_rook.png" alt="ROOK"> es ROOK (torre). Indican los tipos de piezas.<br>
+・El color de relleno de la pieza es el color de su jugador. Por ejemplo, <img class=pieceimg src="img/white_king.png" alt="KING"> es el rey blanco (primer jugador) y <img class=pieceimg src="img/black_king.png" alt="KING"> es el rey negro (segundo jugador).<br>
+・Los dígitos junto a la pieza indican su posición. <img class=pieceimg src="img/white_king.png" alt="KING"> "0000000" significa que el rey blanco está en (0,0,0,0,0,0,0). El 0 se dibuja como una casilla blanca y el 1 como una casilla negra.<br>
+・distance es el número de bits que difieren del punto de vista. Las piezas con la misma distance están en la misma columna.<br>
+Movimientos de las piezas:<br>
+・<img class=pieceimg src="img/white_rook.png" alt="ROOK"> ROOK se mueve en 1 dimensión. (Puede moverse a la posición con 1 bit invertido.)<br>
+・<img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> BISHOP se mueve en diagonal en 2 dimensiones. (Puede moverse a la posición con 2 bits invertidos.)<br>
+・<img class=pieceimg src="img/white_king.png" alt="KING"> KING se mueve en diagonal en 1 a 3 dimensiones. (Puede moverse a la posición con 1 a 3 bits invertidos.)<br>
+Manejo con el ratón:<br>
+・Haz clic en una pieza tuya para seleccionarla. La pieza seleccionada se resalta en amarillo y las piezas rivales que puede capturar, en rojo. Las casillas de destino posibles se dibujan tenues.<br>
+・Haz clic en una pieza roja o en un destino tenue para moverla allí. Haz clic otra vez en la pieza seleccionada para cancelar la selección.<br>
+・Haz doble clic en una pieza blanca para mover el punto de vista de modo que su posición quede en distance = 0.<br>
+・Haz doble clic en una pieza negra para mover el punto de vista de modo que su posición quede en distance = 7.<br>
+Victoria:<br>
+・Ganas cuando capturas el KING del rival.<br>
+</p>
+</div>
+<script type="text/javascript">
+/* show the blocks of the browser language (ja, en, zh, ko, es); English for other languages.
+  ?lang=xx in the URL overrides the browser language (for test). */
+var selectLanguage=function(){
+  var langs=["ja","en","zh","ko","es"];
+  var m=/[?&]lang=([^&#]*)/.exec(location.search);
+  var lang=(m ? decodeURIComponent(m[1]) : (navigator.language||"en")).toLowerCase().split("-")[0];
+  if(langs.indexOf(lang)<0) lang="en";
+  document.documentElement.lang=lang;
+  var e=document.querySelectorAll(".i18n");
+  for(var i=0;i<e.length;i++) e[i].style.display=(e[i].lang==lang)?"block":"none";
+};
+selectLanguage();
+</script>
 <address id="debug">
 binary chess version <span id="versiondisplay"></span> <script type="text/javascript" src="./version.js"></script><br>
 programmed by <a href="http://twitter.com/#!/koteitan">koteitan</a><br>

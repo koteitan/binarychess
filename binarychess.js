@@ -11,7 +11,7 @@ var kind_b = 1; // bishop
 var kind_r = 2; // rook
 var kinds  = 3;
 kindstr   = ['KING','BISHOP','ROOK'];
-kindlabel = [' KING ','BISHOP',' ROOK ']; // same width on the board
+kindimg   = ['king','bishop','rook']; // img/<player>_<kind>.png (made by tools/make-pieces.py)
 playerstr = ['white','black'];
 
 /* state: state of the game
@@ -198,7 +198,7 @@ var displayBoard = function(s, v, msg){
     for(var j=0;j<diffscope[d].length;j++){
       var e = diffscope[d][j];
       out += "<tr><td class='piece "+e.cls+"' onclick='clickPlace("+e.x+")' ondblclick='dblclickPlace("+e.x+")'>";
-      out += "<span class='label p"+e.p+"'>"+kindlabel[e.k]+"</span> ";
+      out += "<img class=pieceimg src='img/"+playerstr[e.p]+"_"+kindimg[e.k]+".png' alt='"+kindstr[e.k]+"' title='"+playerstr[e.p]+" "+kindstr[e.k]+"'> ";
       out += bitshtml(e.x);
       out += "</td></tr>";
     }//j
