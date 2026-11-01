@@ -2,8 +2,9 @@
 <html><head>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8">
 <meta http-equiv="Content-Style-Type" content="text/css">
-<script type="text/javascript" src="./binarychess.js"></script>
 <script type="text/javascript" src="./exarray.js"></script>
+<script type="text/javascript" src="./binarychess_ai.js"></script>
+<script type="text/javascript" src="./binarychess.js"></script>
 <style><!--
   body{font-family:courier;font-size:10pt;color:#FFFFFF; background-color:black}
   a{color:#FFFFFF;border-style:none;text-decoration:underline}
@@ -21,11 +22,18 @@
   hr{border-style:solid}
 --></style>
 <title>7 dimensional binary chess</title></head>
+<body>
 <!--meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"-->
 <!-- body ontouchmove="event.preventDefault()"-->
 <div style="vertical-align:center"><img src="logo.png"></div>
 <!-- canvas align="center" id="canvas0" width="288" height="288" style="width:288px;height:288px;background-color:black;border-style:solid;border-width:0px;border-color:#FFFFFF"--><!-- /canvas -->
 <p><form name=form1>
+MODE:
+<label><input type=radio name=mode value="com-human" checked>COM-&gt;HUMAN</label>
+<label><input type=radio name=mode value="human-com">HUMAN-&gt;COM</label>
+<label><input type=radio name=mode value="human-human">HUMAN-&gt;HUMAN</label>
+<label><input type=radio name=mode value="com-com">COM-&gt;COM</label>
+<input type=button value=START onclick="startGame();"><br>
 COMMAND:<input name=command type=text onkeydown="if(window.event.keyCode==13){form1.command.value=recvcmd(form1.command.value);return false;}">
 <input type=button value=SEND onclick="javscript:form1.command.value=recvcmd(form1.command.value);">
 </form></p>
@@ -44,9 +52,13 @@ COMMAND:<input name=command type=text onkeydown="if(window.event.keyCode==13){fo
 ・"XXXXXXX YYYYYYY" で XXXXXXX の駒を YYYYYYY に動かす。<br>
 ・"XXXXXXX" で XXXXXXX が distance=0 になる視点移動。<br>
 ・SEND ボタンの代わりに Enter キーでも動くよ。<br>
-その他実装状態:<br>
-・AIはまだないです。白黒両方人間プレイヤー。<br>
-・まだ KING とっても終わりになりません。<br>
+勝ち負け:<br>
+・相手の KING をとったら勝ちです。<br>
+対戦モード:<br>
+・MODE で対戦の形を選びます。左が先手(白)、右が後手(黒)です。<br>
+・COM-&gt;HUMAN: COM が白、人間が黒。HUMAN-&gt;COM: 人間が白、COM が黒。HUMAN-&gt;HUMAN: 人間どうし。COM-&gt;COM: COM どうし。<br>
+・MODE を選んで START を押すとゲームが始まります。勝負が付いたら、もう一度 START を押してください。<br>
+・COM は1手1秒くらい考えます。<br>
 </p>
 <address id="debug">
 binary chess version <span id="versiondisplay"></span> <script type="text/javascript" src="./version.js"></script><br>

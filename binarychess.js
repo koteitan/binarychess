@@ -55,11 +55,11 @@ var initGame=function(s){
     t = turn
     k = kind index of the piece to move
     i = piece index to move
-    x = destination (6 bit binary location)
+    x = destination (7 bit binary location)
    effect:
      - state is changed with the m.
      - res = boolean which indicates m is valid
-     - msg = message
+     - msg = message (the result of the game when the opp king is taken)
 */
 var move=function(s, m){
   var own = m[0] & 1;
@@ -68,42 +68,61 @@ var move=function(s, m){
   var x = m[3] & 0x7F;
   var opp = ~own&1;
 
-  // turn check, array index check
+  // check matching between kind and m
   var diff = s.board[own][k][i] ^ x;
   var diffs = (diff&1) + (diff>>1&1) + (diff>>2&1) + (diff>>3&1) + (diff>>4&1) + (diff>>5&1) + (diff>>6&1);
-  // check matching between kind and m 
-  if(diffs==0 || k==0 && diffs>3 || k==1 && diffs!=2 && k==2 && diffs!=1){
-    var result = function(){};
-    res = false;
-    msg = kindstr[k]+" can't move so.";
-    return  [res, msg];
+  if(diffs==0 || k==kind_k && diffs>3 || k==kind_b && diffs!=2 || k==kind_r && diffs!=1){
+    return [false, kindstr[k]+" can't move so."];
   }
   //own collision
   for(var k1=0;k1<kinds;k1++){
     for(var i1=0;i1<s.board[own][k1].length;i1++){
       if(x == s.board[own][k1][i1]){
         //own piece is jamming -> can't move
-        var result = function(){};
-        res = false;
-        msg = kindstr[k]+" can't move onto own piece.";
-        return [res, msg];
+        return [false, kindstr[k]+" can't move onto own piece."];
       }
     }//i
+  }//k
+  //attack
+  var msg = "";
+  for(var k1=0;k1<kinds;k1++){
     for(var i1=0;i1<s.board[opp][k1].length;i1++){
       if(x == s.board[opp][k1][i1]){
         //there exist opp piece -> attack
         s.board[opp][k1].splice(i1,1); //remove opp piece
+        if(k1==kind_k) msg = playerstr[own]+" took the KING. "+playerstr[own]+" won!";
         break;
       }
     }//i
   }//k
-  
+
   s.board[own][k][i] = x;     // renew board
   s.turn             = opp; // renew turn
-  return [true, ""];
+  return [true, msg];
 }
 
 //UI----------------------------
+var isCom    = [false,false]; //isCom[p]=true when player p is COM
+var COM_DELAY = 500;          //[ms] wait before COM's move in COM vs COM
+var gameId   = 0;             //incremented by startGame to cancel the COM of an old game
+var thinking = false;
+var isOver   = false;         //true after the game is over until start
+var lastmsg  = "";            //message shown above the board
+
+var locstr=function(x){
+  var str="";
+  for(var e=0;e<dims;e++) str += x>>(dims-e-1) & 1;
+  return str;
+};
+//get game mode from radio buttons
+var getIsCom=function(){
+  var checked=document.querySelector('input[name="mode"]:checked');
+  var mode=checked?checked.value:"com-human";
+  if(mode=="com-human") return [true ,false];
+  if(mode=="human-com") return [false,true ];
+  if(mode=="com-com"  ) return [true ,true ];
+  return [false,false];
+};
 //display
 var displayBoard = function(s, v, msg){
   var diffscope = [ [],[],[],[],[],[],[],[] ];
@@ -118,7 +137,11 @@ var displayBoard = function(s, v, msg){
     }//k
   }//p
   out = "";
-  out += "<p>next turn is <span class=p"+s.turn+">"+playerstr[s.turn]+"</span> side.<br>";
+  if(isOver){
+    out += "<p>game over. push start to play again.<br>";
+  }else{
+    out += "<p>next turn is <span class=p"+s.turn+">"+playerstr[s.turn]+"</span> side"+(isCom[s.turn]?" (COM)":"")+"."+(thinking?" (thinking...)":"")+"<br>";
+  }
   out += msg + "</p>";
   out += "<table class=whiteborder><tr>";
   for(var d=0;d<dims+1;d++){
@@ -130,60 +153,116 @@ var displayBoard = function(s, v, msg){
       var i = diffscope[d][j][2];
       var x = diffscope[d][j][3];
       out += "<span class=p"+p+">"+kindstr[k]+"</span> ";
-      for(var e=0;e<dims;e++){
-        out += x>>(dims-e-1) & 1;
-      }//e
+      out += locstr(x);
     }//i
     out += "</td></tr></table></td>";
   }//d
   out += "</tr></table>";
   document.getElementById("display").innerHTML = out;
 }
+var redraw=function(){
+  displayBoard(state, viewpoint, lastmsg);
+};
+/* play m = [k,i,x] of the current player.
+  returns [res, msg] of move(). */
+var playMove=function(m){
+  var p = state.turn;
+  var from = state.board[p][m[0]][m[1]];
+  var r = move(state, [p, m[0], m[1], m[2]]);
+  if(!r[0]){
+    lastmsg = r[1];
+    redraw();
+    return r;
+  }
+  lastmsg = "<span class=p"+p+">"+playerstr[p]+"</span>"+(isCom[p]?" (COM)":"")+": "
+          + kindstr[m[0]]+" "+locstr(from)+" -&gt; "+locstr(m[2])+"<br>";
+  if(r[1]!=""){
+    lastmsg += r[1];
+    isOver = true;
+    gameId++; //cancel COM of this game
+  }
+  redraw();
+  return r;
+};
+//COM plays when it is COM's turn
+var startComIfTurn=function(){
+  if(isOver || !isCom[state.turn]) return;
+  thinking=true;
+  redraw();
+  var id=gameId;
+  setTimeout(function(){ //let the browser draw the output first
+    if(id!=gameId) return;
+    var m=comChooseMove(state.board, state.turn);
+    if(id!=gameId) return;
+    thinking=false;
+    if(m==null){
+      lastmsg += playerstr[state.turn]+" has no move. "+playerstr[1-state.turn]+" won!";
+      isOver=true;
+      gameId++;
+      redraw();
+      return;
+    }
+    playMove(m);
+    startComIfTurn(); //next COM in COM vs COM
+  },(isCom[0]&&isCom[1])?COM_DELAY:50);
+};
+//start (or restart) the game
+var startGame=function(){
+  gameId++;
+  thinking=false;
+  isOver=false;
+  isCom=getIsCom();
+  initGame(state);
+  lastmsg="GAME START!";
+  redraw();
+  startComIfTurn();
+};
+var parseloc=function(str){
+  var x = 0;
+  for(var c=0;c<str.length;c++){
+    if(str[c]=='1'){x<<=1;x|=1;}
+    if(str[c]=='0'){x<<=1;     }
+  }
+  return x;
+};
 //input
 var recvcmd=function(cmd){
   if(cmd.search("^ *[01]+ *$")!=-1){
     // digit only -> show
-    var x = 0;
-    for(var c=0;c<cmd.length;c++){//backword
-      if(cmd[c]=='1'){x<<=1;x|=1;}
-      if(cmd[c]=='0'){x<<=1;     }
-    }
-    viewpoint = x;
-    displayBoard(state, viewpoint, "");
+    viewpoint = parseloc(cmd);
+    redraw();
+    return cmd;
   }
   if(cmd.search("^ *[01]+ +[01]+ *$")!=-1){
     // digit space digit -> move
-    var fromstr = cmd.match(/^ *[01]+/)[0];
-    var from = 0;
-    for(var c=0;c<fromstr.length;c++){//backword
-      if(fromstr[c]=='1'){from<<=1;from|=1;}
-      if(fromstr[c]=='0'){from<<=1;     }
+    if(isOver){
+      lastmsg = "game is over. push start to play again.";
+      redraw();
+      return cmd;
     }
-    var tostr   = cmd.match(/[01]+ *$/g)[0];
-    var to = 0;
-    for(var c=0;c<tostr.length;c++){//backword
-      if(tostr[c]=='1'){to<<=1;to|=1;}
-      if(tostr[c]=='0'){to<<=1;     }
+    if(thinking || isCom[state.turn]){
+      lastmsg = "it is COM's turn.";
+      redraw();
+      return cmd;
     }
-  }
-  for(var k=0;k<kinds;k++){
-    for(var i=0;i<state.board[state.turn][k].length;i++){
-      if(from == state.board[state.turn][k][i]){
-        var r=move(state, [state.turn, k,i,to]);
-        if(r[0]){
-          displayBoard(state, viewpoint, "");
-        }else{
-          displayBoard(state, viewpoint, r[1]);
+    var from = parseloc(cmd.match(/^ *[01]+/)[0]);
+    var to   = parseloc(cmd.match(/[01]+ *$/)[0]);
+    for(var k=0;k<kinds;k++){
+      for(var i=0;i<state.board[state.turn][k].length;i++){
+        if(from == state.board[state.turn][k][i]){
+          var r=playMove([k,i,to]);
+          if(r[0]) startComIfTurn();
+          return cmd;
         }
-        break;
       }
     }
+    lastmsg = "there is no "+playerstr[state.turn]+" piece at "+locstr(from)+".";
+    redraw();
   }
   return cmd;
 };
 
 //entry point
 window.onload=function(){
-  initGame(state);
-  displayBoard(state, viewpoint, "");
+  startGame();
 };
