@@ -1,7 +1,8 @@
 binarychess
 ===========
+2x2x2x2x2x2x2
 
-This is the new multi-dimensional chess game.
+This is the chess game on a 2x2x2x2x2x2x2 board.
 
 We are discussing about new board game with multi-dimensional expression at the forum:
 - http://peace.2ch.net/test/read.cgi/gamedev/1383053532/
