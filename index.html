@@ -20,6 +20,15 @@
   .p0{background-color:#FFFFFF;border-color:#000000;color:#000000;border-style:solid;border-width:1px;padding:1px}
   .p1{background-color:#000000;border-color:#FFFFFF;color:#FFFFFF;border-style:solid;border-width:1px;padding:1px}
   hr{border-style:solid}
+  .label{white-space:pre}
+  .b0{background-color:#FFFFFF;color:#000000;border:1px solid #FFFFFF}
+  .b1{background-color:#000000;color:#FFFFFF;border:1px solid #FFFFFF}
+  td.piece{white-space:nowrap;padding:2px;border:2px solid transparent}
+  td.own{cursor:pointer}
+  td.sel{cursor:pointer;border-color:#FFFF00;background-color:#444400}
+  td.tgt{cursor:pointer;border-color:#FF4040;background-color:#550000}
+  td.cand{cursor:pointer;opacity:0.3}
+  td.cand:hover{opacity:0.7}
 --></style>
 <title>7 dimensional binary chess</title></head>
 <body>
@@ -33,9 +42,7 @@ MODE:
 <label><input type=radio name=mode value="human-com">HUMAN-&gt;COM</label>
 <label><input type=radio name=mode value="human-human">HUMAN-&gt;HUMAN</label>
 <label><input type=radio name=mode value="com-com">COM-&gt;COM</label>
-<input type=button value=START onclick="startGame();"><br>
-COMMAND:<input name=command type=text onkeydown="if(window.event.keyCode==13){form1.command.value=recvcmd(form1.command.value);return false;}">
-<input type=button value=SEND onclick="javscript:form1.command.value=recvcmd(form1.command.value);">
+<input type=button value=START onclick="startGame();">
 </form></p>
 <div id=display>
 </div>
@@ -43,15 +50,17 @@ COMMAND:<input name=command type=text onkeydown="if(window.event.keyCode==13){fo
 表示のよみかた:<br>
 ・"KING", "BISHOP", "ROOK" というのが駒の種類です。<br>
 ・駒の種類の色がプレイヤーの色になっています。たとえば、<span class="p0">KING</span>は白(先手)のキング。<span class="p1">KING</span>は黒(後手)のキング。<br>
-・横の数字はその駒の位置を表しています。<span class="p0">KING</span> "0000000" は座標 (0,0,0,0,0,0,0) に白のキングがいるということ。<br>
+・横の数字はその駒の位置を表しています。<span class="p0">KING</span> "0000000" は座標 (0,0,0,0,0,0,0) に白のキングがいるということ。0 は白いマス、1 は黒いマスで書きます。<br>
+・distance は視点の位置から何ビット違うかです。同じ distance の駒が同じ列に並びます。<br>
 駒の動き:<br>
 ・ROOK は１次元移動。(1bit反転した位置に動かせる)<br>
 ・BISHOP は２次元斜め移動。(2bit反転した位置に動かせる)<br>
 ・KING は１～３次元斜め移動。(1～3bit反転した位置に動かせる)<br>
-コマンド入力の仕方:<br>
-・"XXXXXXX YYYYYYY" で XXXXXXX の駒を YYYYYYY に動かす。<br>
-・"XXXXXXX" で XXXXXXX が distance=0 になる視点移動。<br>
-・SEND ボタンの代わりに Enter キーでも動くよ。<br>
+マウスでの操作:<br>
+・自分の駒をクリックすると選びます。選んだ駒は黄色、その駒で取れる相手の駒は赤で光ります。移動先の候補は薄く書かれます。<br>
+・赤い駒か薄い移動先をクリックすると、そこへ動きます。選んだ駒をもう一度クリックすると選ぶのをやめます。<br>
+・白の駒をダブルクリックすると、その位置が distance = 0 になるように視点が動きます。<br>
+・黒の駒をダブルクリックすると、その位置が distance = 7 になるように視点が動きます。<br>
 勝ち負け:<br>
 ・相手の KING をとったら勝ちです。<br>
 対戦モード:<br>

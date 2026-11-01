@@ -11,6 +11,7 @@ var kind_b = 1; // bishop
 var kind_r = 2; // rook
 var kinds  = 3;
 kindstr   = ['KING','BISHOP','ROOK'];
+kindlabel = [' KING ','BISHOP',' ROOK ']; // same width on the board
 playerstr = ['white','black'];
 
 /* state: state of the game
@@ -123,19 +124,67 @@ var getIsCom=function(){
   if(mode=="com-com"  ) return [true ,true ];
   return [false,false];
 };
+var selected = -1;            //place of the selected piece of the human, or -1
+var clickTimer = null;        //single click waits for a double click
+
+var popcount=function(x){
+  return (x&1) + (x>>1&1) + (x>>2&1) + (x>>3&1) + (x>>4&1) + (x>>5&1) + (x>>6&1);
+};
+// true when a piece of kind k can move from x to y (by the number of flipped bits)
+var canReach=function(k,x,y){
+  var n=popcount(x^y);
+  if(k==kind_k) return n>=1 && n<=3;
+  if(k==kind_b) return n==2;
+  return n==1;
+};
+/* findPiece(s, x) returns [p,k,i] of the piece on place x, or null */
+var findPiece=function(s, x){
+  for(var p=0;p<2;p++){
+    for(var k=0;k<kinds;k++){
+      var i=s.board[p][k].indexOf(x);
+      if(i>=0) return [p,k,i];
+    }
+  }
+  return null;
+};
+// true when the human can move pieces now
+var isHumanTurn=function(){
+  return !isOver && !thinking && !isCom[state.turn];
+};
+//location as cells: 0 = white cell, 1 = black cell
+var bitshtml=function(x){
+  var str="";
+  for(var e=0;e<dims;e++) str += (x>>(dims-e-1) & 1) ? "<span class=b1>1</span>" : "<span class=b0>0</span>";
+  return str;
+};
 //display
 var displayBoard = function(s, v, msg){
+  var sel = (selected>=0 && isHumanTurn()) ? findPiece(s, selected) : null;
   var diffscope = [ [],[],[],[],[],[],[],[] ];
+  // pieces
   for(var p=0;p<2;p++){
     for(var k=0;k<kinds;k++){
       for(var i=0;i<s.board[p][k].length;i++){
         var x = s.board[p][k][i];
-        var diff = v ^ x;
-        var diffs = (diff&1) + (diff>>1&1) + (diff>>2&1) + (diff>>3&1) + (diff>>4&1) + (diff>>5&1) + (diff>>6&1);
-        diffscope[diffs].push([p,k,i,x]);
+        var cls = "";
+        if(sel){
+          if(x==selected) cls = "sel";
+          else if(p!=s.turn && canReach(sel[1], selected, x)) cls = "tgt";
+        }else if(isHumanTurn() && p==s.turn){
+          cls = "own";
+        }
+        diffscope[popcount(v^x)].push({p:p, k:k, x:x, cls:cls});
       }//i
     }//k
   }//p
+  // empty places where the selected piece can move to
+  if(sel){
+    for(var x=0;x<(1<<dims);x++){
+      if(canReach(sel[1], selected, x) && findPiece(s, x)==null){
+        diffscope[popcount(v^x)].push({p:sel[0], k:sel[1], x:x, cls:"cand"});
+      }
+    }
+  }
   out = "";
   if(isOver){
     out += "<p>game over. push start to play again.<br>";
@@ -147,15 +196,13 @@ var displayBoard = function(s, v, msg){
   for(var d=0;d<dims+1;d++){
     out += "<td class=whiteborder width="+(100/(dims+1))+"%>distance = " + d + ":<br><table>";
     for(var j=0;j<diffscope[d].length;j++){
-      out += "<tr><td>";
-      var p = diffscope[d][j][0];
-      var k = diffscope[d][j][1];
-      var i = diffscope[d][j][2];
-      var x = diffscope[d][j][3];
-      out += "<span class=p"+p+">"+kindstr[k]+"</span> ";
-      out += locstr(x);
-    }//i
-    out += "</td></tr></table></td>";
+      var e = diffscope[d][j];
+      out += "<tr><td class='piece "+e.cls+"' onclick='clickPlace("+e.x+")' ondblclick='dblclickPlace("+e.x+")'>";
+      out += "<span class='label p"+e.p+"'>"+kindlabel[e.k]+"</span> ";
+      out += bitshtml(e.x);
+      out += "</td></tr>";
+    }//j
+    out += "</table></td>";
   }//d
   out += "</tr></table>";
   document.getElementById("display").innerHTML = out;
@@ -176,6 +223,7 @@ var playMove=function(m){
   }
   lastmsg = "<span class=p"+p+">"+playerstr[p]+"</span>"+(isCom[p]?" (COM)":"")+": "
           + kindstr[m[0]]+" "+locstr(from)+" -&gt; "+locstr(m[2])+"<br>";
+  selected = -1;
   if(r[1]!=""){
     lastmsg += r[1];
     isOver = true;
@@ -212,54 +260,64 @@ var startGame=function(){
   thinking=false;
   isOver=false;
   isCom=getIsCom();
+  selected=-1;
   initGame(state);
   lastmsg="GAME START!";
   redraw();
   startComIfTurn();
 };
-var parseloc=function(str){
-  var x = 0;
-  for(var c=0;c<str.length;c++){
-    if(str[c]=='1'){x<<=1;x|=1;}
-    if(str[c]=='0'){x<<=1;     }
-  }
-  return x;
+/* the human moves the piece on place from to place to.
+  returns true when the move is done. */
+var humanMove=function(from, to){
+  if(!isHumanTurn()) return false;
+  var f=findPiece(state, from);
+  if(f==null || f[0]!=state.turn) return false;
+  var r=playMove([f[1], f[2], to]);
+  if(r[0]) startComIfTurn();
+  return r[0];
 };
-//input
-var recvcmd=function(cmd){
-  if(cmd.search("^ *[01]+ *$")!=-1){
-    // digit only -> show
-    viewpoint = parseloc(cmd);
+//mouse
+/* click on place x:
+  own piece          -> select it (click again to cancel)
+  target of selected -> move the selected piece there
+  others             -> cancel the selection */
+var doClick=function(x){
+  if(!isHumanTurn()) return;
+  var f=findPiece(state, x);
+  if(f!=null && f[0]==state.turn){
+    selected = (selected==x) ? -1 : x;
     redraw();
-    return cmd;
+    return;
   }
-  if(cmd.search("^ *[01]+ +[01]+ *$")!=-1){
-    // digit space digit -> move
-    if(isOver){
-      lastmsg = "game is over. push start to play again.";
-      redraw();
-      return cmd;
+  if(selected>=0){
+    var sel=findPiece(state, selected);
+    if(sel!=null && canReach(sel[1], selected, x)){
+      humanMove(selected, x);
+      return;
     }
-    if(thinking || isCom[state.turn]){
-      lastmsg = "it is COM's turn.";
-      redraw();
-      return cmd;
-    }
-    var from = parseloc(cmd.match(/^ *[01]+/)[0]);
-    var to   = parseloc(cmd.match(/[01]+ *$/)[0]);
-    for(var k=0;k<kinds;k++){
-      for(var i=0;i<state.board[state.turn][k].length;i++){
-        if(from == state.board[state.turn][k][i]){
-          var r=playMove([k,i,to]);
-          if(r[0]) startComIfTurn();
-          return cmd;
-        }
-      }
-    }
-    lastmsg = "there is no "+playerstr[state.turn]+" piece at "+locstr(from)+".";
-    redraw();
   }
-  return cmd;
+  selected = -1;
+  redraw();
+};
+var clickPlace=function(x){
+  if(clickTimer!=null) clearTimeout(clickTimer);
+  clickTimer=null;
+  if(findPiece(state, x)==null){ // empty place can not be double clicked
+    doClick(x);
+    return;
+  }
+  clickTimer=setTimeout(function(){ clickTimer=null; doClick(x); }, 250);
+};
+/* double click on a piece:
+  white piece -> its place becomes distance = 0
+  black piece -> its place becomes distance = 7 */
+var dblclickPlace=function(x){
+  if(clickTimer!=null) clearTimeout(clickTimer);
+  clickTimer=null;
+  var f=findPiece(state, x);
+  if(f==null) return;
+  viewpoint = (f[0]==0) ? x : (~x & 0x7F);
+  redraw();
 };
 
 //entry point
