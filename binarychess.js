@@ -14,6 +14,31 @@ kindstr   = ['KING','BISHOP','ROOK'];
 kindimg   = ['king','bishop','rook']; // img/<player>_<kind>.png (made by tools/make-pieces.py)
 playerstr = ['white','black'];
 
+/* isMobile: true on smartphones (no hover, coarse pointer).
+  ?mobile=1 / ?mobile=0 in the URL overrides it (for test).
+  isVertical: true on smartphones in portrait. The board is drawn vertically
+  (distance 0 at the top, 7 at the bottom); in landscape it is drawn as on PC.
+  The classes "mobile" and "vertical" of <html> switch the style. */
+var isMobile=(function(){
+  var m=/[?&]mobile=([^&#]*)/.exec(location.search);
+  if(m) return m[1]=="1";
+  return !!(window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches);
+})();
+var isVertical=false;
+var landscapeQuery=window.matchMedia ? window.matchMedia("(orientation: landscape)") : null;
+var updateLayout=function(){
+  isVertical = isMobile && !(landscapeQuery && landscapeQuery.matches);
+  var c=document.documentElement.classList;
+  c.toggle("mobile", isMobile);
+  c.toggle("vertical", isVertical);
+};
+updateLayout();
+if(landscapeQuery){
+  var onRotate=function(){ updateLayout(); if(state.board) redraw(); };
+  if(landscapeQuery.addEventListener) landscapeQuery.addEventListener("change", onRotate);
+  else if(landscapeQuery.addListener) landscapeQuery.addListener(onRotate);
+}
+
 /* state: state of the game
   state.turn  = player index in his turn (0 or 1)
   state.board[p][k][i] = 0xXX
@@ -118,7 +143,7 @@ var locstr=function(x){
 //get game mode from radio buttons
 var getIsCom=function(){
   var checked=document.querySelector('input[name="mode"]:checked');
-  var mode=checked?checked.value:"com-human";
+  var mode=checked?checked.value:"human-com";
   if(mode=="com-human") return [true ,false];
   if(mode=="human-com") return [false,true ];
   if(mode=="com-com"  ) return [true ,true ];
@@ -126,6 +151,7 @@ var getIsCom=function(){
 };
 var selected = -1;            //place of the selected piece of the human, or -1
 var clickTimer = null;        //single click waits for a double click
+var lastClick  = {x:-1, t:0}; //place and time of the last click on a piece
 
 var popcount=function(x){
   return (x&1) + (x>>1&1) + (x>>2&1) + (x>>3&1) + (x>>4&1) + (x>>5&1) + (x>>6&1);
@@ -192,19 +218,31 @@ var displayBoard = function(s, v, msg){
     out += "<p>next turn is <span class=p"+s.turn+">"+playerstr[s.turn]+"</span> side"+(isCom[s.turn]?" (COM)":"")+"."+(thinking?" (thinking...)":"")+"<br>";
   }
   out += msg + "</p>";
-  out += "<table class=whiteborder><tr>";
-  for(var d=0;d<dims+1;d++){
-    out += "<td class=whiteborder width="+(100/(dims+1))+"%>distance = " + d + ":<br><table>";
-    for(var j=0;j<diffscope[d].length;j++){
-      var e = diffscope[d][j];
-      out += "<tr><td class='piece "+e.cls+"' onclick='clickPlace("+e.x+")' ondblclick='dblclickPlace("+e.x+")'>";
-      out += "<img class=pieceimg src='img/"+playerstr[e.p]+"_"+kindimg[e.k]+".png' alt='"+kindstr[e.k]+"' title='"+playerstr[e.p]+" "+kindstr[e.k]+"'> ";
-      out += bitshtml(e.x);
+  // piece (or candidate) e in an element of tag
+  var entry=function(e, tag){
+    return "<"+tag+" class='piece "+e.cls+"' onclick='clickPlace("+e.x+")'>"
+      + "<img class=pieceimg src='img/"+playerstr[e.p]+"_"+kindimg[e.k]+".png' alt='"+kindstr[e.k]+"' title='"+playerstr[e.p]+" "+kindstr[e.k]+"'> "
+      + bitshtml(e.x) + "</"+tag+">";
+  };
+  if(isVertical){
+    // one row for each distance: distance 0 at the top, 7 at the bottom
+    out += "<table class='whiteborder board'>";
+    for(var d=0;d<dims+1;d++){
+      out += "<tr><td class=whiteborder>distance = " + d + ":<br>";
+      for(var j=0;j<diffscope[d].length;j++) out += entry(diffscope[d][j], "span") + " ";
       out += "</td></tr>";
-    }//j
-    out += "</table></td>";
-  }//d
-  out += "</tr></table>";
+    }//d
+    out += "</table>";
+  }else{
+    // one column for each distance: distance 0 at the left, 7 at the right
+    out += "<table class=whiteborder><tr>";
+    for(var d=0;d<dims+1;d++){
+      out += "<td class=whiteborder width="+(100/(dims+1))+"%>distance = " + d + ":<br><table>";
+      for(var j=0;j<diffscope[d].length;j++) out += "<tr>" + entry(diffscope[d][j], "td") + "</tr>";
+      out += "</table></td>";
+    }//d
+    out += "</tr></table>";
+  }
   document.getElementById("display").innerHTML = out;
 }
 var redraw=function(){
@@ -299,14 +337,25 @@ var doClick=function(x){
   selected = -1;
   redraw();
 };
+/* click on place x. Two clicks on the same piece within 300 ms is a double click.
+  (The double click is detected here because a double tap on a smartphone
+  does not always fire the dblclick event.) */
 var clickPlace=function(x){
+  var now=performance.now();
   if(clickTimer!=null) clearTimeout(clickTimer);
   clickTimer=null;
   if(findPiece(state, x)==null){ // empty place can not be double clicked
+    lastClick={x:-1, t:0};
     doClick(x);
     return;
   }
-  clickTimer=setTimeout(function(){ clickTimer=null; doClick(x); }, 250);
+  if(lastClick.x==x && now-lastClick.t<300){
+    lastClick={x:-1, t:0};
+    dblclickPlace(x);
+    return;
+  }
+  lastClick={x:x, t:now};
+  clickTimer=setTimeout(function(){ clickTimer=null; doClick(x); }, 300);
 };
 /* double click on a piece:
   white piece -> its place becomes distance = 0

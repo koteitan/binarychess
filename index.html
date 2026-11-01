@@ -6,6 +6,7 @@
 <script type="text/javascript" src="./binarychess_ai.js"></script>
 <script type="text/javascript" src="./binarychess.js"></script>
 <style><!--
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   body{font-family:courier;font-size:10pt;color:#FFFFFF; background-color:black}
   a{color:#FFFFFF;border-style:none;text-decoration:underline}
   a:link{color:#FFFFFF;border-style:none;text-decoration:underline}
@@ -25,27 +26,37 @@
   .p1{background-color:#000000;border-color:#FFFFFF;color:#FFFFFF;border-style:solid;border-width:1px;padding:1px}
   hr{border-style:solid}
   .i18n{display:none}
-  .pieceimg{width:17px;height:17px;vertical-align:middle}
-  #howto .pieceimg{width:16px;height:16px;vertical-align:text-bottom}
+  .pieceimg{width:calc(1.125em + 2px);height:calc(1.125em + 2px);vertical-align:middle} /* the height of the location bits */
+  #howto .pieceimg{width:1.2em;height:1.2em;vertical-align:text-bottom}
   .b0{background-color:#FFFFFF;color:#000000;border:1px solid #FFFFFF}
   .b1{background-color:#000000;color:#FFFFFF;border:1px solid #FFFFFF}
-  td.piece{white-space:nowrap;padding:2px;border:2px solid transparent}
-  td.own{cursor:pointer}
-  td.sel{cursor:pointer;border-color:#FFFFFF;background-color:#606060}
-  td.tgt{cursor:pointer;border-color:#FFFFFF;border-style:dashed;background-color:#303030}
-  td.cand{cursor:pointer;opacity:0.3}
-  td.cand:hover{opacity:0.7}
+  .piece{white-space:nowrap;padding:2px;border:2px solid transparent;touch-action:manipulation}
+  .own{cursor:pointer}
+  .sel{cursor:pointer;border-color:#FFFFFF;background-color:#606060}
+  .tgt{cursor:pointer;border-color:#FFFFFF;border-style:dashed;background-color:#303030}
+  .cand{cursor:pointer;opacity:0.3}
+  @media (hover: hover){ html:not(.mobile) .cand:hover{opacity:0.7} } /* no hover color on smartphones (a tap leaves :hover) */
+  /* smartphone in portrait: 2x font, distance 0..7 from the top to the bottom.
+    (in landscape: the same layout as PC) */
+  .vertical body{font-size:20pt}
+  .vertical input{font-size:20pt}
+  .vertical input[type=radio]{width:24px;height:24px;margin:0px 8px 0px 16px}
+  .vertical input[type=radio]:checked{box-shadow:inset 0px 0px 0px 4px #000000}
+  .vertical #logo{width:862px}
+  .vertical .board{width:100%}
+  .vertical label{white-space:nowrap}
+  .vertical span.piece{display:inline-block;margin:2px 0px}
 --></style>
 <title>7 dimensional binary chess</title></head>
 <body>
 <!--meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"-->
 <!-- body ontouchmove="event.preventDefault()"-->
-<div style="vertical-align:center"><img src="logo.png"></div>
+<div style="vertical-align:center"><img id=logo src="logo.png"></div>
 <!-- canvas align="center" id="canvas0" width="288" height="288" style="width:288px;height:288px;background-color:black;border-style:solid;border-width:0px;border-color:#FFFFFF"--><!-- /canvas -->
 <p><form name=form1>
 MODE:
-<label><input type=radio name=mode value="com-human" checked>COM-&gt;HUMAN</label>
-<label><input type=radio name=mode value="human-com">HUMAN-&gt;COM</label>
+<label><input type=radio name=mode value="human-com" checked>HUMAN-&gt;COM</label>
+<label><input type=radio name=mode value="com-human">COM-&gt;HUMAN</label>
 <label><input type=radio name=mode value="human-human">HUMAN-&gt;HUMAN</label>
 <label><input type=radio name=mode value="com-com">COM-&gt;COM</label>
 <input type=button value=START onclick="startGame();">
@@ -82,7 +93,7 @@ Es un ajedrez de 7 dimensiones en un tablero de 2x2x2x2x2x2x2.<br>
 ・<img class=pieceimg src="img/white_king.png" alt="KING"> が KING、<img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> が BISHOP、<img class=pieceimg src="img/white_rook.png" alt="ROOK"> が ROOK で、駒の種類を表します。<br>
 ・駒の塗りの色がプレイヤーの色になっています。たとえば、<img class=pieceimg src="img/white_king.png" alt="KING">は白(先手)のキング。<img class=pieceimg src="img/black_king.png" alt="KING">は黒(後手)のキング。<br>
 ・横の数字はその駒の位置を表しています。<img class=pieceimg src="img/white_king.png" alt="KING"> "0000000" は座標 (0,0,0,0,0,0,0) に白のキングがいるということ。0 は白いマス、1 は黒いマスで書きます。<br>
-・distance は視点の位置から何ビット違うかです。同じ distance の駒が同じ列に並びます。<br>
+・distance は視点の位置から何ビット違うかです。同じ distance の駒はまとめて並びます。<br>
 駒の動き:<br>
 ・<img class=pieceimg src="img/white_rook.png" alt="ROOK"> ROOK は１次元移動。(1bit反転した位置に動かせる)<br>
 ・<img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> BISHOP は２次元斜め移動。(2bit反転した位置に動かせる)<br>
@@ -100,7 +111,7 @@ How to read the board:<br>
 ・<img class=pieceimg src="img/white_king.png" alt="KING"> is KING, <img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> is BISHOP and <img class=pieceimg src="img/white_rook.png" alt="ROOK"> is ROOK. They show the kinds of pieces.<br>
 ・The fill color of the piece is the color of its player. For example, <img class=pieceimg src="img/white_king.png" alt="KING"> is the white (first player) king, and <img class=pieceimg src="img/black_king.png" alt="KING"> is the black (second player) king.<br>
 ・The digits next to a piece show its location. <img class=pieceimg src="img/white_king.png" alt="KING"> "0000000" means that the white king is at (0,0,0,0,0,0,0). 0 is drawn as a white cell and 1 as a black cell.<br>
-・distance is the number of bits that differ from the viewpoint. Pieces with the same distance are listed in the same column.<br>
+・distance is the number of bits that differ from the viewpoint. Pieces with the same distance are listed together.<br>
 Moves of pieces:<br>
 ・<img class=pieceimg src="img/white_rook.png" alt="ROOK"> ROOK moves in 1 dimension. (It can move to the location with 1 bit flipped.)<br>
 ・<img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> BISHOP moves diagonally in 2 dimensions. (It can move to the location with 2 bits flipped.)<br>
@@ -118,7 +129,7 @@ Win:<br>
 ・<img class=pieceimg src="img/white_king.png" alt="KING"> 是 KING，<img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> 是 BISHOP，<img class=pieceimg src="img/white_rook.png" alt="ROOK"> 是 ROOK，表示棋子的种类。<br>
 ・棋子的填充颜色就是玩家的颜色。例如，<img class=pieceimg src="img/white_king.png" alt="KING"> 是白方(先手)的王，<img class=pieceimg src="img/black_king.png" alt="KING"> 是黑方(后手)的王。<br>
 ・旁边的数字表示棋子的位置。<img class=pieceimg src="img/white_king.png" alt="KING"> "0000000" 表示白方的王在坐标 (0,0,0,0,0,0,0)。0 画成白格，1 画成黑格。<br>
-・distance 是与视点位置不同的位数。distance 相同的棋子排在同一列。<br>
+・distance 是与视点位置不同的位数。distance 相同的棋子排在一起。<br>
 棋子的走法:<br>
 ・<img class=pieceimg src="img/white_rook.png" alt="ROOK"> ROOK 沿 1 个维度移动。(可以移动到翻转 1 位的位置)<br>
 ・<img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> BISHOP 沿 2 个维度斜向移动。(可以移动到翻转 2 位的位置)<br>
@@ -136,7 +147,7 @@ Win:<br>
 ・<img class=pieceimg src="img/white_king.png" alt="KING">은 KING, <img class=pieceimg src="img/white_bishop.png" alt="BISHOP">은 BISHOP, <img class=pieceimg src="img/white_rook.png" alt="ROOK">은 ROOK으로, 말의 종류를 나타냅니다.<br>
 ・말을 칠한 색이 플레이어의 색입니다. 예를 들어 <img class=pieceimg src="img/white_king.png" alt="KING">은 백(선수)의 킹, <img class=pieceimg src="img/black_king.png" alt="KING">은 흑(후수)의 킹입니다.<br>
 ・옆의 숫자는 그 말의 위치입니다. <img class=pieceimg src="img/white_king.png" alt="KING"> "0000000"은 좌표 (0,0,0,0,0,0,0)에 백의 킹이 있다는 뜻입니다. 0은 흰 칸, 1은 검은 칸으로 표시합니다.<br>
-・distance는 시점 위치와 다른 비트의 개수입니다. distance가 같은 말은 같은 열에 놓입니다.<br>
+・distance는 시점 위치와 다른 비트의 개수입니다. distance가 같은 말은 함께 놓입니다.<br>
 말의 움직임:<br>
 ・<img class=pieceimg src="img/white_rook.png" alt="ROOK"> ROOK은 1차원으로 이동합니다. (1비트를 뒤집은 위치로 이동할 수 있습니다)<br>
 ・<img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> BISHOP은 2차원 대각선으로 이동합니다. (2비트를 뒤집은 위치로 이동할 수 있습니다)<br>
@@ -154,7 +165,7 @@ Cómo leer el tablero:<br>
 ・<img class=pieceimg src="img/white_king.png" alt="KING"> es KING (rey), <img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> es BISHOP (alfil) y <img class=pieceimg src="img/white_rook.png" alt="ROOK"> es ROOK (torre). Indican los tipos de piezas.<br>
 ・El color de relleno de la pieza es el color de su jugador. Por ejemplo, <img class=pieceimg src="img/white_king.png" alt="KING"> es el rey blanco (primer jugador) y <img class=pieceimg src="img/black_king.png" alt="KING"> es el rey negro (segundo jugador).<br>
 ・Los dígitos junto a la pieza indican su posición. <img class=pieceimg src="img/white_king.png" alt="KING"> "0000000" significa que el rey blanco está en (0,0,0,0,0,0,0). El 0 se dibuja como una casilla blanca y el 1 como una casilla negra.<br>
-・distance es el número de bits que difieren del punto de vista. Las piezas con la misma distance están en la misma columna.<br>
+・distance es el número de bits que difieren del punto de vista. Las piezas con la misma distance aparecen juntas.<br>
 Movimientos de las piezas:<br>
 ・<img class=pieceimg src="img/white_rook.png" alt="ROOK"> ROOK se mueve en 1 dimensión. (Puede moverse a la posición con 1 bit invertido.)<br>
 ・<img class=pieceimg src="img/white_bishop.png" alt="BISHOP"> BISHOP se mueve en diagonal en 2 dimensiones. (Puede moverse a la posición con 2 bits invertidos.)<br>
