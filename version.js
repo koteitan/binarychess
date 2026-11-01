@@ -1,1 +1,1 @@
-document.getElementById("versiondisplay").innerHTML = "0.4";
+document.getElementById("versiondisplay").innerHTML = "1.0.0";
